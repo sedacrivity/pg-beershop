@@ -1,16 +1,17 @@
-FROM node:14 AS build-env
+FROM node:18 AS build-env
 WORKDIR /app
 COPY gen/srv/package.json .
 COPY package-lock.json .
 
-RUN npm ci --only=production
+RUN npm ci --omit=dev
 
 COPY gen/srv .
 COPY app app/
 RUN find app -name '*.cds' | xargs rm -f
 
-FROM gcr.io/distroless/nodejs:14
+FROM gcr.io/distroless/nodejs:18
 COPY --from=build-env /app /app
 WORKDIR /app
 EXPOSE 4004
-CMD ["node_modules/@sap/cds/bin/cds.js", "run"]
+ENV NODE_ENV=production
+CMD ["node_modules/@sap/cds/bin/cds-serve.js"]

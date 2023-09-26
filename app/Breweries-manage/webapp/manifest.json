@@ -1,0 +1,171 @@
+{
+    "_version": "1.8.0",
+    "sap.app": {
+        "id": "Breweries.manage",
+        "type": "application",
+        "i18n": "i18n/i18n.properties",
+        "applicationVersion": {
+            "version": "1.0.0"
+        },
+        "title": "{{appTitle}}",
+        "description": "{{appDescription}}",
+        "ach": "CA-UI5-FE",
+        "dataSources": {
+            "mainService": {
+                "uri": "/odata/v4/beershop-admin/",
+                "type": "OData",
+                "settings": {
+                    "odataVersion": "4.0"
+                }
+            }
+        },
+        "offline": false,
+        "resources": "resources.json",
+        "sourceTemplate": {
+            "id": "ui5template.fiorielements.v4.lrop",
+            "version": "1.0.0"
+        },
+        "crossNavigation": {
+            "inbounds": {
+                "csw-breweriesmanage-inbound": {
+                    "signature": {
+                        "parameters": {},
+                        "additionalParameters": "allowed"
+                    },
+                    "semanticObject": "Breweries",
+                    "action": "manage",
+                    "title": "{{flpTitle}}",
+                    "subTitle": "{{flpSubtitle}}",
+                    "icon": ""
+                }
+            }
+        }
+    },
+    "sap.ui": {
+        "technology": "UI5",
+        "fullWidth": true,
+        "icons": {
+            "icon": "",
+            "favIcon": "",
+            "phone": "",
+            "phone@2": "",
+            "tablet": "",
+            "tablet@2": ""
+        },
+        "deviceTypes": {
+            "desktop": true,
+            "tablet": true,
+            "phone": true
+        }
+    },
+    "sap.ui5": {
+        "dependencies": {
+            "minUI5Version": "1.84.0",
+            "libs": {
+                "sap.fe.templates": {}
+            }
+        },
+        "contentDensities": {
+            "compact": true,
+            "cozy": true
+        },
+        "models": {
+            "i18n": {
+                "type": "sap.ui.model.resource.ResourceModel",
+                "uri": "i18n/i18n.properties"
+            },
+            "": {
+                "dataSource": "mainService",
+                "settings": {
+                    "synchronizationMode": "None",
+                    "operationMode": "Server",
+                    "autoExpandSelect": true,
+                    "earlyRequests": true,
+                    "groupProperties": {
+                        "default": {
+                            "submit": "Auto"
+                        }
+                    }
+                }
+            }
+        },
+        "routing": {
+            "routes": [
+                {
+                    "name": "BreweriesListRoute",
+                    "target": "BreweriesListTarget",
+                    "pattern": ":?query:"
+                },
+                {
+                    "name": "BreweriesDetailsRoute",
+                    "target": "BreweriesDetailsTarget",
+                    "pattern": "Breweries({key}):?query:"
+                },
+                {
+                    "name": "breweryRoute",
+                    "target": "breweryTarget",
+                    "pattern": "Breweries({key})/brewery({key2}):?query:"
+                }
+            ],
+            "targets": {
+                "BreweriesListTarget": {
+                    "type": "Component",
+                    "id": "BreweriesListTarget",
+                    "name": "sap.fe.templates.ListReport",
+                    "options": {
+                        "settings": {
+                            "entitySet": "Breweries",
+                            "initialLoad": true,
+                            "navigation": {
+                                "Breweries": {
+                                    "detail": {
+                                        "route": "BreweriesDetailsRoute"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "BreweriesDetailsTarget": {
+                    "type": "Component",
+                    "id": "BreweriesDetailsTarget",
+                    "name": "sap.fe.templates.ObjectPage",
+                    "options": {
+                        "settings": {
+                            "entitySet": "Breweries",
+                            "navigation": {
+                                "brewery": {
+                                    "detail": {
+                                        "route": "breweryRoute"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "breweryTarget": {
+                    "type": "Component",
+                    "id": "breweryTarget",
+                    "name": "sap.fe.templates.ObjectPage",
+                    "options": {
+                        "settings": {
+                            "entitySet": "Breweries"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "sap.platform.abap": {
+        "_version": "1.1.0",
+        "uri": ""
+    },
+    "sap.platform.hcp": {
+        "_version": "1.1.0",
+        "uri": ""
+    },
+    "sap.fiori": {
+        "registrationIds": [],
+        "archeType": "transactional"
+    }
+}

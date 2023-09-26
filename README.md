@@ -1,6 +1,6 @@
 # CAP Beershop using PostgreSQL for persistence
 
-[![Build Status](https://dev.azure.com/gregorwolf/gregorwolf/_apis/build/status/gregorwolf.pg-beershop?branchName=master)](https://dev.azure.com/gregorwolf/gregorwolf/_build/latest?definitionId=2&branchName=master)
+[![Build Status](https://dev.azure.com/gregorwolf/gregorwolf/_apis/build/status/gregorwolf.pg-beershop?branchName=main)](https://dev.azure.com/gregorwolf/gregorwolf/_build/latest?definitionId=2&branchName=main)
 
 ## Local execution
 
@@ -10,60 +10,41 @@ To get started quickly you need docker and docker-compose.
 
 ### Setup
 
-To run the example with a local PostgreSQL DB in docker create a `default-env.json` file with the following content:
+Before you start please install all required dependencies using:
 
-```JSON
-{
-  "VCAP_SERVICES": {
-    "postgres": [
-      {
-        "name": "pg-beershop-database",
-        "label": "postgres",
-        "tags": ["plain", "db", "relational", "database"],
-        "credentials": {
-          "host": "localhost",
-          "port": "5432",
-          "database": "beershop",
-          "user": "postgres",
-          "password": "postgres"
-        }
-      }
-    ]
-  }
-}
+```
+npm ci
 ```
 
 Start the PostgreSQL database and [Adminer](https://www.adminer.org/) using:
 
-`npm run docker:start:pg`
+```
+npm run docker:start:pg
+```
 
 It will use the latest available PostgreSQL Docker container. If you want to test with PostgreSQL 11 then run:
 
-`npm run docker:start:pg:11`
+```
+npm run docker:start:pg:11
+```
 
 Now deploy the database schema using [cds-dbm](https://github.com/mikezaschka/cds-dbm) with the command:
 
-`npm run deploy:pg`
+```
+npm run deploy:pg
+```
 
-The deploy will not automatically load any data which is made available via local CSV files. We need to perform an additional step for that to happen. 
+The deploy will automatically load any data which is made available via local CSV files.
 
-In order to perform a full data load you can execute the command:
-
-`npm run deploy:pg:data:full`
-
-Later on you can perform delta data loads with the command:
-
-`npm run deploy:pg:data:delta`
-
-So perform an initial full data load with the above command. This action should upload 3 CSV files with data.
-
-Then open [http://localhost:8080/](http://localhost:8080/) and login by selecting System _PostgreSQL_, Server: _beershop-postgresql_, Username _postgres_ and Password _postgres_. The database _beershop_ should already exist as you've just deployed it and the tables should contain data. If you have issues with the deployment you can run the SQL commands via adminer. You find them in the file _beershop.sql_.
+Then open [http://localhost:8080/](http://localhost:8080/) and login by selecting System _PostgreSQL_, Server: _beershop-postgresql_, Username _postgres_ and Password _postgres_. The database _postgres_ should already exist as you've just deployed it and the tables should contain data.
 
 Now you can start the CAP application by using:
 
-`cds run`
+```
+cds watch --profile pg
+```
 
-Then open <http://localhost:4004/beershop/Beers> in the browser and you should see an ODATA response with 11 beers:
+Then open <http://localhost:4004/odata/v4/beershop/Beers> in the browser and you should see an ODATA response with 11 beers:
 
 ```JSON
 {
@@ -88,14 +69,26 @@ Then open <http://localhost:4004/beershop/Beers> in the browser and you should s
 }
 ```
 
-To stop the docker containers run either `npm run docker:stop:pg` or `npm run docker:stop:pg:11`.
+To stop the docker containers run either
 
-## Run on SAP Cloud Platform - Cloud Foundry Environment with Hyperscaler Option
+```
+npm run docker:stop:pg
+```
+
+or `npm run docker:stop:pg:11`.
+
+## Run on SAP Business Technology Platform - Cloud Foundry Environment with Hyperscaler Option
 
 We're using the mbt build to create a mtar that can be deployed to the SAP CP Cloud Foundry. The build ist started with:
 
 ```
 npm run build:cf
+```
+
+login to Cloud Foundry with:
+
+```
+cf login --sso
 ```
 
 then you can deploy with:
@@ -104,33 +97,43 @@ then you can deploy with:
 npm run deploy:cf
 ```
 
-## Run on SAP Cloud Platform - Cloud Foundry Environment with Service Broker
+## Run on SAP Business Technology Platform - Cloud Foundry Environment with Service Broker
 
 Until [SAP will provide a fully managed PostgreSQL DB](https://blogs.sap.com/2020/02/11/consuming-hyper-scaler-backing-services-on-sap-cloud-platform-an-update/) you need to provide your on PostgreSQL DB. One way is to install a [Open Service Broker](https://www.openservicebrokerapi.org/). The page [Compliant Service Brokers](https://www.openservicebrokerapi.org/compliant-service-brokers) lists brokers supporting AWS, Azure and GCP. The SAP Developers Tutorial Mission [Use Microsoft Azure Services in SAP Cloud Platform](https://developers.sap.com/mission.cp-azure-services.html) describes in great detail how to setup the Service Broker for Azure. When you finished this setup you can run:
 
-`npm run create-service:pg:dbms`
+```
+npm run create-service:pg:dbms
+```
 
 to instanciate a PostgreSQL DBMS. Then run:
 
-`npm run create-service:pg:db`
+```
+npm run create-service:pg:db
+```
 
 to create a the beershop database in the DBMS. With that opreperation done you can build the MTA by running:
 
-`npm run build:mta`
+```
+npm run build:cf
+```
 
 That MTA can be deployed using:
 
-`npm run deploy:cf`
+```
+npm run deploy:cf
+```
 
-The created database is empty. As currently no deploy script is available the needed tables and views for the CAP application need to be created before you can run the application. The easiest way to create the tables and views is to use Adminer as for the local deployment. You can get the credentials by opening the pg-beershop-srv application via the SAP Cloud Platform Cockpit. Navigate to the Service Bindings and click on "Show sensitive data". Enter the data in the corresponsing fields of the Adminer login screen. Execute the SQL commands you find in _beershop.sql_. To fill the database with data also execute the ones in _beershop-data.sql_. Now try out the URL you find in the Overview of the pg-beershop-srv application.
+The created database is empty. As currently no deploy script is available the needed tables and views for the CAP application need to be created before you can run the application. The easiest way to create the tables and views is to use Adminer as for the local deployment. You can get the credentials by opening the pg-beershop-srv application via the SAP Business Technology Platform Cockpit. Navigate to the Service Bindings and click on "Show sensitive data". Enter the data in the corresponsing fields of the Adminer login screen. Execute the SQL commands you find in _beershop.sql_. To fill the database with data also execute the ones in _beershop-data.sql_. Now try out the URL you find in the Overview of the pg-beershop-srv application.
 
-## Run on SAP Cloud Platform - Kyma Environment
+## Run on SAP Business Technology Platform - Kyma Environment
 
 ### Create Docker Image
 
 If you want to build your own docker image replace _gregorwolf_ in _package.json_ and _deployment/beershop.yaml_ with your own hub.docker.com account. Then run:
 
-`npm run build:docker`
+```
+npm run build:docker
+```
 
 To test the image locally you have to create a _.env_ file that provides the environment variable VCAP_SERVICES which contains the connection information. Fill it with the following content:
 
@@ -138,61 +141,119 @@ To test the image locally you have to create a _.env_ file that provides the env
 
 Then run:
 
-`npm run docker:start:cds`
+```
+npm run docker:run:srv
+```
+
+If you stopped this docker container you can start it again with
+
+```
+npm run docker:start:srv
+```
 
 to start the image _gregorwolf/pg-beershop:latest_ from hub.docker.com. If you want to run your own image run che command you find in _package.json_ with your image. Finally publish the created image with:
 
-`npm run push:docker`
+```
+npm run push:docker
+```
 
 ### Deploy to Kyma
 
 Download the kubeconfig from your Kyma instance via the download icon in the cluster overview. Save it in _~/.kube/kubeconfig-kyma.yml_. Then run:
 
-`export KUBECONFIG=~/.kube/kubeconfig-kyma.yml`
+```
+export KUBECONFIG=~/.kube/kubeconfig-kyma.yml
+```
 
 Please note that the token in the kubeconfig is [only valid for 8 hours](https://kyma-project.io/docs/components/security#details-iam-kubeconfig-service). So you might have to redo the download whenever you want to run the commands again.
 
 To keep this project separate from your other deployments I would suggest to create a namespace:
 
-`kubectl create namespace pg-beershop`
+```
+kubectl create namespace pg-beershop
+```
 
 To avoid `-n pg-beershop` with each kubectl command you can run:
 
-`kubectl config set-context --current --namespace=pg-beershop`
+```
+kubectl config set-context --current --namespace=pg-beershop
+```
 
 Deploy the configuration:
 
-`kubectl -n pg-beershop apply -f deployment/beershop.yaml`
+```
+kubectl -n pg-beershop apply -f deployment/beershop.yaml
+```
 
 To create the beershop database a Job is used that starts once when you run the apply. Afterward you can delete the job with:
 
-`kubectl -n pg-beershop delete job beershop-db-init`
+```
+kubectl -n pg-beershop delete job beershop-db-init
+```
 
 For troubleshooting you can SSH into the CAP container:
 
-`kubectl -n pg-beershop exec $(kubectl -n pg-beershop get pods -l tier=frontend -o jsonpath='{.items[0].metadata.name}') -t -i /bin/bash`
+```
+kubectl -n pg-beershop exec $(kubectl -n pg-beershop get pods -l tier=frontend -o jsonpath='{.items[0].metadata.name}') -t -i /bin/bash
+```
 
 Before you can update the container you have to delete the beershop-db-init.
 
-`kubectl -n pg-beershop delete job beershop-db-init`
+```
+kubectl -n pg-beershop delete job beershop-db-init
+```
 
 Then you can run:
 
-`kubectl -n pg-beershop rollout restart deployment/beershop`
+```
+kubectl -n pg-beershop rollout restart deployment/beershop
+```
 
 If you want to delete the deployment, then run:
 
-`kubectl -n pg-beershop delete -f deployment/beershop.yaml`
+```
+kubectl -n pg-beershop delete -f deployment/beershop.yaml
+```
 
 ## Run on Microsoft Azure
 
-Install [Azure CLI](https://docs.microsoft.com/cli/azure/) for your resprective OS. With the comand:
+Install [Azure CLI](https://docs.microsoft.com/cli/azure/) for your resprective OS.
 
-`az account list-locations -o table`
+Before you can use the CLI you have to login:
 
-you can retrieve the list of locations and select the one fitting your needs best. To deploy a PostgreSQL the extension db-up needs to be installed:
+```
+az login
+```
 
-`az extension add --name db-up`
+If you have multiple account you have to list them:
+
+```
+az account list
+```
+
+and then set the one you want to use:
+
+```
+az account set --subscription <Your-Subscription-ID>
+```
+
+With the comand:
+
+```
+az account list-locations -o table
+```
+
+you can retrieve the list of locations and select the one fitting your needs best. You can configure the default settings for location and groups:
+
+```
+az config set defaults.location=germanywestcentral defaults.group=beershop
+```
+
+To deploy a PostgreSQL the extension db-up needs to be installed:
+
+```
+az extension add --name db-up
+```
 
 Set the environment variables:
 
@@ -203,11 +264,15 @@ export adminpassword=<yourAdminPassword>
 
 Then the PostgreSQL server and database can be created:
 
-`az postgres up --resource-group beershop --location germanywestcentral --sku-name B_Gen5_1 --server-name $postgreservername --database-name beershop --admin-user beershop --admin-password $adminpassword --ssl-enforcement Enabled --version 11`
+```
+az postgres up --resource-group beershop --location germanywestcentral --sku-name B_Gen5_1 --server-name $postgreservername --database-name beershop --admin-user beershop --admin-password $adminpassword --ssl-enforcement Enabled --version 11
+```
 
-If you want to use this database from your own location or from SAP Cloud Platform Trial in eu10 then you have to add a firewall rule. Based on the information found in [SAP Cloud Platform Connectivity - Network](https://help.sap.com/viewer/cca91383641e40ffbe03bdc78f00f681/Cloud/en-US/e23f776e4d594fdbaeeb1196d47bbcc0.html#loioe23f776e4d594fdbaeeb1196d47bbcc0__trial) I add the following rule:
+If you want to use this database from your own location or from SAP Business Technology Platform Trial in eu10 then you have to add a firewall rule. Based on the information found in [SAP Business Technology Platform Connectivity - Network](https://help.sap.com/viewer/cca91383641e40ffbe03bdc78f00f681/Cloud/en-US/e23f776e4d594fdbaeeb1196d47bbcc0.html#loioe23f776e4d594fdbaeeb1196d47bbcc0__trial) I add the following rule:
 
-`az postgres server firewall-rule create -g beershop -s $postgreservername -n cfeu10 --start-ip-address 3.122.0.0 --end-ip-address 3.124.255.255`
+```
+az postgres server firewall-rule create -g beershop -s $postgreservername -n cfeu10 --start-ip-address 3.122.0.0 --end-ip-address 3.124.255.255
+```
 
 Store the DB connection information in _default-env.json_. It must contain the certificate for the TLS connection documented in [Configure TLS connectivity in Azure Database for PostgreSQL - Single Server](https://docs.microsoft.com/de-de/azure/postgresql/concepts-ssl-connection-security). The format must be the following:
 
@@ -244,33 +309,45 @@ Store the DB connection information in _default-env.json_. It must contain the c
 }
 ```
 
-Connect to the database as described in the last paragraph of _Run on SAP Cloud Platform_.
+Connect to the database as described in the last paragraph of _Run on SAP Business Technology Platform_.
 
 Store the file content in the environment variable VCAP_SERVICES (jq must be installed):
 
-`export VCAP_SERVICES="$(cat default-env.json | jq .VCAP_SERVICES)"`
+```
+export VCAP_SERVICES="$(cat default-env.json | jq .VCAP_SERVICES)"
+```
 
 Now create the app service plan:
 
-`az appservice plan create --name beershop --resource-group beershop --sku F1 --is-linux`
+```
+az appservice plan create --name beershop --resource-group beershop --sku F1 --is-linux
+```
 
 Check out what Node.JS runtimes are available:
 
-`az webapp list-runtimes --linux`
+```
+az webapp list-runtimes --linux
+```
 
 Then create the web app:
 
-`az webapp create --resource-group beershop --plan beershop --name beershop --runtime "NODE|12.9"`
+```
+az webapp create --resource-group beershop --plan beershop --name beershop --runtime "NODE:16-lts"
+```
 
 Configure an environment variable the variable created before:
 
-`az webapp config appsettings set --name beershop --resource-group beershop --settings VCAP_SERVICES="$VCAP_SERVICES"`
+```
+az webapp config appsettings set --name beershop --resource-group beershop --settings VCAP_SERVICES="$VCAP_SERVICES"
+```
 
 Now you can publish the app using the Azure DevOps Pipeline.
 
 To delete the database you can run:
 
-`az postgres server delete --resource-group beershop --name beershop`
+```
+az postgres server delete --resource-group beershop --name beershop
+```
 
 You have to confirm the execution with _y_.
 
@@ -278,7 +355,9 @@ You have to confirm the execution with _y_.
 
 Install [Google Cloud SDK](https://cloud.google.com/sdk/docs/downloads-interactive) for your resprective OS. Then work through the [Quickstart for Node.js in the standard environment](https://cloud.google.com/appengine/docs/standard/nodejs/quickstart) to deploy
 
-`gcloud app create`
+```
+gcloud app create
+```
 
 Store the environment variable in _env_variables.yaml_:
 
@@ -300,7 +379,7 @@ You can also create a new pipeline or application from the Heroku website and bo
 Start by creating a new app and remote repository on heroku by issuing this command:
 
 ```
-heroku create
+heroku create -a pg-beershop
 ```
 
 ### Setup the HEROKU POSTGRES Service
@@ -311,6 +390,12 @@ In order to provision your application with an Heroku Postgres db you have to ru
 
 ```
 heroku addons:create heroku-postgresql:<your_plan>
+```
+
+For the first test use
+
+```
+heroku addons:create heroku-postgresql:hobby-dev
 ```
 
 When correctly issued this command logs the name of the newly created db instance in the console.
@@ -395,7 +480,9 @@ Right now, due to limitations in the current cds-dbm library, is not possible to
 
 When you run:
 
-`npm run compile:tosql`
+```
+npm run compile:tosql
+```
 
 the CDS model will be compiled to the _beershop-cds.sql_ file. Using the script _cdssql2pgsql.js_ this SQL is converted to support PostgreSQL. Currently only the datatype NVARCHAR must be replaced with VARCHAR.
 

@@ -134,7 +134,7 @@ spec:
                 "credentials": {
                   "host": "beershop-postgresql",
                   "port": "5432",
-                  "database": "beershop",
+                  "database": "postgres",
                   "user": "postgres",
                   "password": "postgres"
                 }
@@ -162,19 +162,13 @@ spec:
             do echo waiting for service beershop-postgresql; 
             sleep 2; 
           done;
-          sleep 5;
+          sleep 10;
           ']
       containers:
         - name: beershop-db-init
           image: gregorwolf/pg-beershop-db:latest
           imagePullPolicy: "Always"
-          command: ['sh', '-c', 
-            "echo $JAVA_HOME && 
-            npm -v && 
-            jq --version && 
-            npx cds-dbm --version &&
-            npx cds-dbm deploy --create-db -l delta -a
-            "]
+          command: ['/nodejs/bin/node', 'node_modules/@sap/cds/lib/dbs/cds-deploy.js']
           envFrom:
             - secretRef:
                 name: beershop-postgresql-secret
