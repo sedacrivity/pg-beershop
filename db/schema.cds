@@ -10,6 +10,7 @@ entity Beers : cuid {
     description : '{i18n>ibuDescription}'
   );
   brewery : Association to one Brewery;
+  active: Boolean;
 };
 
 entity Brewery : cuid {
